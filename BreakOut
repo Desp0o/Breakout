@@ -1,0 +1,262 @@
+/* Constants for bricks */
+var NUM_ROWS = 8;
+var BRICK_TOP_OFFSET = 50;
+var BRICK_SPACING = 2;
+var NUM_BRICKS_PER_ROW = 10;
+var BRICK_HEIGHT = 10;
+var SPACE_FOR_BRICKS = getWidth() - (NUM_BRICKS_PER_ROW + 1) * BRICK_SPACING;
+var BRICK_WIDTH = SPACE_FOR_BRICKS / NUM_BRICKS_PER_ROW;
+var brick;
+var ball;
+/* Constants for ball and paddle */
+var PADDLE_WIDTH = 80;
+var PADDLE_HEIGHT = 15;
+var PADDLE_OFFSET = 10;
+var paddle;
+var liveCount = 3;
+var pointCounter = 0;
+var DELAY = 20;
+var isPaused = true;
+var ptext;
+var lifeText;
+var heart;
+var pointimg;
+var borderLine;
+
+var enteredSpeed = readInt("Enter Game Speed: ");
+
+var BALL_RADIUS = 10;
+var dx = enteredSpeed;
+var dy = enteredSpeed;
+
+function start(){
+	bricks();
+	ball();
+	paddle();
+	mouseMoveMethod(paddleMove);
+	setTimer(bounce, DELAY);
+    scoreBoard();
+    lifeBoard();
+    border();
+    
+    
+      
+	
+}
+
+
+function border(){
+    
+    borderLine = new Rectangle(getWidth(),2);
+    borderLine.setPosition(0,28);
+    add(borderLine);
+    
+}
+
+function bricks(){
+    for(var i=0; i<NUM_BRICKS_PER_ROW; i++){
+        for(var j=0; j<NUM_ROWS; j++){
+            
+            var posX = 0+BRICK_SPACING;
+            var posY = 0+BRICK_TOP_OFFSET;
+            
+            brick = new Rectangle(BRICK_WIDTH,BRICK_HEIGHT);
+            brick.setPosition(posX+(BRICK_WIDTH+BRICK_SPACING)*i,
+                              posY+(BRICK_HEIGHT+BRICK_SPACING)*j);
+                              add(brick);
+            if((j+1) % 8 == 1){
+                brick.setColor(Color.red);
+            }else if((j+1) % 8 == 2){
+                brick.setColor(Color.red);
+            }else if((j+1) % 8 == 3){
+                brick.setColor(Color.orange);
+            }else if((j+1) % 8 == 4){
+                brick.setColor(Color.orange);
+            }else if((j+1) % 8 == 5){
+                brick.setColor(Color.green);
+            }else if((j+1) % 8 == 6){
+                brick.setColor(Color.green);
+            }else if((j+1) % 8 == 7){
+                brick.setColor(Color.blue);
+            }else if((j+1) % 8 == 0){
+                brick.setColor(Color.blue);
+            }
+            
+            
+        }
+    }
+    
+    
+}
+
+function ball(){
+    
+    ball = new Circle(BALL_RADIUS);
+    ball.setPosition(getWidth()/2, getHeight()/2);
+    add(ball);
+    
+    
+}
+
+function bounce(){
+    
+    smashBrick();
+    ball.move(dx,dy);
+    
+    if(ball.getX()+ball.getRadius() > getWidth()){
+        dx=-dx;
+    }
+    
+    if(ball.getY()+ball.getRadius() > paddle.getY()){
+        var ballelem = getElementAt(ball.getX(),
+                                    ball.getY()+ball.getRadius());
+        if(ballelem != null){
+            dy = -dy;
+        }
+    }
+    
+    if(ball.getX() - ball.getRadius() < 0 ){
+        dx=-dx;
+    }
+    
+    if(ball.getY() -ball.getRadius() < 30 ){
+        dy=-dy;
+    }
+    
+    if(ball.getY()-ball.getRadius() > getHeight()){
+        
+        loseLife();
+    }
+     
+}
+
+function paddle(){
+    var paddleX = getWidth()/2-PADDLE_WIDTH/2;
+    
+    
+    paddle = new Rectangle(PADDLE_WIDTH,PADDLE_HEIGHT);
+    paddle.setPosition(paddleX,getHeight()-PADDLE_HEIGHT-PADDLE_OFFSET);
+    add(paddle)
+    
+}
+
+function paddleMove(e){
+    
+    paddle.setPosition(e.getX()-PADDLE_WIDTH/2,getHeight()-PADDLE_HEIGHT-PADDLE_OFFSET);
+    
+    if(paddle.getX() >= getWidth()-PADDLE_WIDTH){
+     paddle.setPosition(getWidth()-PADDLE_WIDTH,getHeight()-PADDLE_HEIGHT-PADDLE_OFFSET);   
+    }
+    
+    if(paddle.getX() < 0){
+      paddle.setPosition(0,getHeight()-PADDLE_HEIGHT-PADDLE_OFFSET);  
+    }
+    
+    
+}
+
+function smashBrick(){
+    
+    
+    
+    if(ball.getY()-ball.getRadius() <= brick.getY() ||ball.getY()+ball.getRadius() <= brick.getY() ){
+       var ballelem = getElementAt(ball.getX(), ball.getY()+ball.getRadius());
+     
+        if(ballelem != null ){
+            dy=-dy;
+            ball.setColor(ballelem.getColor());
+            remove(ballelem);
+            
+            
+            pointCounter++;
+            ptext.setText(" "+pointCounter);
+            if(pointCounter == NUM_BRICKS_PER_ROW*NUM_ROWS){
+                youWin();
+            }
+        }  
+          
+    }
+    
+    
+    
+}
+
+
+function scoreBoard(){
+    ptext = new Text(" ");
+    ptext.setPosition(38,23);
+    ptext.setFont( "15pt Arial");
+    add(ptext);
+    
+    pointimg = new WebImage("https://codehs.com/uploads/b1e325ed3803cf836e04e2a1db5cf5cd");
+    pointimg.setSize(50, 23);
+    pointimg.setPosition(0-5,3);
+    add(pointimg);
+    
+}
+
+function youWin(){
+    stopTimer(bounce);
+    remove(ball);
+    
+    var winText = new Text("Congrats You Won!!!","30pt Arial");
+    winText.setPosition(getWidth()/2-winText.getWidth()/2, getHeight()/2);
+    winText.setColor(Color.green);
+    add(winText);
+}
+
+function youLost(){
+    stopTimer(bounce);
+    remove(ball);
+    
+    var winText = new Text("Looser, You Lost!!!","30pt Arial");
+    winText.setPosition(getWidth()/2-winText.getWidth()/2, getHeight()/2);
+    winText.setColor(Color.red);
+    add(winText);
+}
+
+function loseLife(){
+        
+        liveCount--;
+        ball.setPosition(getWidth()/2, getHeight()/2);
+        stopTimer(bounce);
+        mouseClickMethod(respawn);
+        lifeText.setText(" "+liveCount);
+        
+        
+        if(liveCount == 0){
+            youLost();
+            remove(ball);
+            remove(lifeText);
+            remove(ptext);
+            remove(heart);
+            stopTimer(bounce);
+            remove(paddle);
+        }
+    
+    
+}
+
+function lifeBoard(){
+    
+    lifeText = new Text(" 3");
+    lifeText.setPosition((getWidth()-lifeText.getWidth()),23);
+    lifeText.setFont( "15pt Arial");
+    add(lifeText);
+    
+    heart = new WebImage("https://cdn4.iconfinder.com/data/icons/miscellaneous-icons-1/200/misc_game_life-512.png");
+    heart.setSize(50, 30);
+    heart.setPosition((getWidth()-heart.getWidth())-lifeText.getWidth(),0);
+    add(heart);
+    
+    
+}
+
+function respawn(e){
+    
+        isPaused != isPaused;
+        
+        if(isPaused == true){
+        setTimer(bounce, DELAY);
+        }
+}
